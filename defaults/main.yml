@@ -1,0 +1,48 @@
+---
+## Custom variables
+node_name: "{{ inventory_hostname | regex_replace('\\..+', '') }}"
+
+elasticsearch:
+  dir:
+    data: /var/lib/elasticsearch
+    logs: /var/logs/elasticsearch
+  certificates: 
+    dir: /opt/private/ssl
+    http_certificate_name: "{{ node_name }}-http-certs.p12"
+    transport_certificate_name: "{{ node_name }}-transport-certs.p12"
+
+## /etc/elasticsearch/lasticsearch.yml
+cluster.name: "default"
+
+multiple_zones: false
+
+node:
+  name: "{{ node_name }}"
+  data: true
+  master: true
+
+path:
+  data: "{{ elasticsearch.dir.data }}"
+  logs: "{{ elasticsearch.dir.logs }}"
+
+bootstrap.memory_lock: true
+
+network.host: "_eth0_,_local_"
+
+http.port: "9200"
+
+xpack:
+  security:
+    enabled: true
+    http.ssl:
+      enabled: true
+      verification_mode: full
+      keystore.path:  "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.http_certificate_name }}"
+      truststore.path: "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.http_certificate_name }}"
+    transport.ssl:
+      enabled: true
+      verification_mode: full
+      keystore.path: "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.transport_certificate_name }}"
+      truststore.path: "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.transport_certificate_name }}"
+  monitoring.collection:
+    enabled: true

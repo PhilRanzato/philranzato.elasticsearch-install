@@ -1,0 +1,17 @@
+---
+- name: "Import elasticsearch GPG key"
+  rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: "Configure Elasticsearch repository"
+  copy:
+    src: "elasticsearch.repo"
+    dest: "/etc/yum.repos.d/elasticsearch.repo"
+
+- name: "Install Elasticsearch"
+  yum:
+    name: elasticsearch
+    enable_repo: elasticsearch
+    state: latest
+  notify: "Start Elasticsearch"

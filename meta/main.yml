@@ -1,0 +1,16 @@
+galaxy_info:
+  author: Phil Ranzato
+  description: Install and configure elasticsearch
+  company: KiratechCH
+  issue_tracker_url: https://github.com/PhilRanzato/pllr.elasticsearch/issues
+  license: Apache-2.0
+  min_ansible_version: 2.3
+  platforms:
+  - name: Centos
+    versions:
+    - 7
+  - name: RHEL
+    versions:
+    - 7
+  galaxy_tags: []
+dependencies: []
