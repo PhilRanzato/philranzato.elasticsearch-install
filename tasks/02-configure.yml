@@ -1,9 +1,4 @@
 ---
-- name: "Template Elasticsearch instances file"
-  template:
-    src: "instances_elasticsearch.yml.j2"
-    dest: "/usr/share/elasticsearch/instances.yml"
-
 - name: "Template Elasticsearch configuration"
   template:
     src: "elasticsearch.yml.j2"

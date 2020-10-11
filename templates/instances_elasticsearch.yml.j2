@@ -1,8 +1,0 @@
-instances:
-{% for es in groups['elasticsearch-master']%}"
-  - name: "{{ es | regex_replace('\..+', '') }}"
-    ip:
-      - "{{ hostvars[es].ansible_eth0.ipv4.address }}"
-    dns:
-      - "{{ es }}"
-{% endfor %}

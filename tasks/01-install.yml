@@ -12,6 +12,6 @@
 - name: "Install Elasticsearch"
   yum:
     name: elasticsearch
-    enable_repo: elasticsearch
+    enablerepo: elasticsearch
     state: latest
   notify: "Start Elasticsearch"
