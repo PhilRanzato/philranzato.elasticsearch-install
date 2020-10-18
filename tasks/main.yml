@@ -10,3 +10,7 @@
 
 - name: "Install java"
   include_tasks: "03-install-java.yml"
+
+- name: "Lock version in yum for elasticsearch"
+  include_tasks: "04-yum-versionlock.yml"
+  when: lock_es_version
