@@ -7,3 +7,6 @@
 
 - name: "Configure the underlying host to use elasticsearch"
   include_tasks: "02-host-configuration.yml"
+
+- name: "Install java"
+  include_tasks: "03-install-java.yml"

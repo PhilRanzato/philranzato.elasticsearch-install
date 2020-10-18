@@ -34,6 +34,9 @@
   become: true
   notify: "Reload daemons"
 
+- name: "Enforce ulimits"
+  shell: ulimit -n 65535
+
 # systemctl daemon-reload
 - name: "Flush Handlers"
   meta: flush_handlers

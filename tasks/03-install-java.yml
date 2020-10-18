@@ -1,0 +1,7 @@
+---
+# sudo yum install java-11-openjdk-devel
+- name: "Install java"
+  yum: 
+    name: java-11-openjdk-devel
+    state: latest
+  become: true
