@@ -5,6 +5,5 @@
 - name: "Install Elasticsearch"
   include_tasks: "01-install.yml"
 
-# This will be moved in another role
-# - name: "Configure Elasticsearch"
-#   include_tasks: "02-configure.yml"
+- name: "Configure the underlying host to use elasticsearch"
+  include_tasks: "02-host-configuration.yml"

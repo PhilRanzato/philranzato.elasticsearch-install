@@ -11,3 +11,7 @@
     name: elasticsearch
     daemon_reload: yes
     state: restarted
+
+- name: "Reload daemons"
+  systemd:
+    daemon_reload: yes
