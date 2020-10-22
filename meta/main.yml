@@ -1,6 +1,6 @@
 galaxy_info:
   author: Phil Ranzato
-  description: Install and configure elasticsearch
+  description: Install elasticsearch
   company: KiratechCH
   issue_tracker_url: https://github.com/PhilRanzato/pllr.elasticsearch-install/issues
   license: Apache-2.0

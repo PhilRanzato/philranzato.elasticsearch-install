@@ -1,80 +1,20 @@
 pllr.elasticsearch
 =========
 
-Install and configure Elasticsearch on a CentOS 7 or Rhel 7 virtual machine.
+Install Elasticsearch on a CentOS 7 or Rhel 7 OS.
 
 Requirements
 ------------
 
-A CA certificate and key when bootstrapping with `xpack` security.
+None.
 
 Role Variables
 --------------
 
 ```yaml
 ---
-## Custom variables
-# This variable defaults to the hostname without the domain
-node_name: "{{ inventory_hostname | regex_replace('\\..+', '') }}"
-
-elasticsearch:
-  dir:
-    # Elasticsearch data directory
-    data: /var/lib/elasticsearch
-    # Elasticsearch logs directory
-    logs: /var/logs/elasticsearch
-  certificates: 
-    # Elasticsearch certificates directory (empty if not using xpacx security)
-    dir: /opt/private/ssl
-    # Elasticsearch http certificate (empty if not using xpacx security)
-    http_certificate_name: "{{ node_name }}-http-certs.p12"
-    # Elasticsearch transport certificate (empty if not using xpacx security)
-    transport_certificate_name: "{{ node_name }}-transport-certs.p12"
-
-## /etc/elasticsearch/lasticsearch.yml
-# Cluster name
-cluster.name: "default"
-
-# When bootstrapping using different zones
-multiple_zones: false
-
-node:
-  name: "{{ node_name }}"
-  # Whether the elasticsearch host is a data node
-  data: true
-  # Whether the elasticsearch host is a master node
-  master: true
-
-path:
-  # uses the variable above for directories of data and logs
-  data: "{{ elasticsearch.dir.data }}"
-  logs: "{{ elasticsearch.dir.logs }}"
-
-# Lock the memory on startup
-bootstrap.memory_lock: true
-
-# Set the bind address to a specific IP
-network.host: "_eth0_,_local_"
-
-# Set a custom port for HTTP
-http.port: "9200"
-
-# xpack security and monitoring
-xpack:
-  security:
-    enabled: true
-    http.ssl:
-      enabled: true
-      verification_mode: full
-      keystore.path:  "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.http_certificate_name }}"
-      truststore.path: "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.http_certificate_name }}"
-    transport.ssl:
-      enabled: true
-      verification_mode: full
-      keystore.path: "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.transport_certificate_name }}"
-      truststore.path: "{{ elasticsearch.certificates.dir }}/{{ elasticsearch.certificates.transport_certificate_name }}"
-  monitoring.collection:
-    enabled: true
+# Lock elasticsearch version with yum versionlock
+lock_es_version: true
 ```
 
 Dependencies
@@ -87,10 +27,10 @@ Example Playbook
 
 ```yaml
 ---
-- name: "Install and configure Elasticsearch"
+- name: "Install Elasticsearch"
   hosts: elasticsearch-master
   roles:
-  - { role: pllr.elasticsearch }
+  - { role: pllr.elasticsearch-install }
 ```
 
 License
@@ -141,4 +81,82 @@ Tasks Analysis
   # systemctl enable elasticsearch
   # systemctl start elasticsearch
   notify: "Start Elasticsearch"
+```
+
+`02-host-configuration.yml`
+
+```yaml
+---
+# disable swapoff (swapoff -a)
+- name: "Disable swapoff"
+  shell: swapoff -a
+  become: true
+
+# cat << EOF >> /etc/security/limits.conf
+# elasticsearch  -  nofile  65535
+# EOF
+- name: "Configure Limits"
+  pam_limits:
+    domain: elasticsearch
+    limit_type: hard
+    limit_item: nofile
+    value: '65535'
+  become: true
+
+# mkdir -p /etc/systemd/system/elasticsearch.service.d
+- name: "Create oveeride folder for systemd elaticsearch service"
+  file:
+    state: directory
+    path: /etc/systemd/system/elasticsearch.service.d
+    recurse: yes
+  become: true
+
+# cat << EOF > /etc/systemd/system/elasticsearch.service.d/override.conf
+# [Service]
+# LimitMEMLOCK=infinity
+# EOF
+- name: "Copy the override configuration"
+  copy:
+    src: override.conf
+    dest: /etc/systemd/system/elasticsearch.service.d/override.conf
+  become: true
+  notify: "Reload daemons"
+
+- name: "Enforce ulimits"
+  shell: ulimit -n 65535
+
+# systemctl daemon-reload
+- name: "Flush Handlers"
+  meta: flush_handlers
+```
+
+`03-install-java.yml`
+
+```yaml
+---
+# sudo yum install java-11-openjdk-devel
+- name: "Install java"
+  yum: 
+    name: java-11-openjdk-devel
+    state: latest
+  become: true
+```
+
+`04-yum-versionlock.yml`
+
+```yaml
+---
+# yum install -y yum-plugin-versionlock
+- name: "Install yum versionlock plugin"
+  yum:
+    name: yum-plugin-versionlock
+    state: present
+  become: true
+
+- name: "Lock current version for elasticsearch"
+  shell: yum versionlock elasticsearch
+  # expecting a module, disable warnings for not using yum module
+  args:
+    warn: false
+  become: true
 ```
