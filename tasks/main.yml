@@ -1,0 +1,16 @@
+---
+- name: "Preflight Checks"
+  include_tasks: "00-preflight-checks.yml"
+
+- name: "Install Elasticsearch"
+  include_tasks: "01-install.yml"
+
+- name: "Configure the underlying host to use elasticsearch"
+  include_tasks: "02-host-configuration.yml"
+
+- name: "Install java"
+  include_tasks: "03-install-java.yml"
+
+- name: "Lock version in yum for elasticsearch"
+  include_tasks: "04-yum-versionlock.yml"
+  when: lock_es_version

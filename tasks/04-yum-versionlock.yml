@@ -1,0 +1,13 @@
+---
+- name: "Install yum versionlock plugin"
+  yum:
+    name: yum-plugin-versionlock
+    state: present
+  become: true
+
+- name: "Lock current version for elasticsearch"
+  shell: yum versionlock elasticsearch
+  # expecting a module, disable warnings for not using yum module
+  args:
+    warn: false
+  become: true

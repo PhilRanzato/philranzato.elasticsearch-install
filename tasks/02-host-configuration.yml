@@ -1,0 +1,42 @@
+---
+# disable swapoff (swapoff -a)
+- name: "Disable swapoff"
+  shell: swapoff -a
+  become: true
+
+# cat << EOF >> /etc/security/limits.conf
+# elasticsearch  -  nofile  65535
+# EOF
+- name: "Configure Limits"
+  pam_limits:
+    domain: elasticsearch
+    limit_type: hard
+    limit_item: nofile
+    value: '65535'
+  become: true
+
+# mkdir -p /etc/systemd/system/elasticsearch.service.d
+- name: "Create oveeride folder for systemd elaticsearch service"
+  file:
+    state: directory
+    path: /etc/systemd/system/elasticsearch.service.d
+    recurse: yes
+  become: true
+
+# cat << EOF > /etc/systemd/system/elasticsearch.service.d/override.conf
+# [Service]
+# LimitMEMLOCK=infinity
+# EOF
+- name: "Copy the override configuration"
+  copy:
+    src: override.conf
+    dest: /etc/systemd/system/elasticsearch.service.d/override.conf
+  become: true
+  notify: "Reload daemons"
+
+- name: "Enforce ulimits"
+  shell: ulimit -n 65535
+
+# systemctl daemon-reload
+- name: "Flush Handlers"
+  meta: flush_handlers
